@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Printer, Trash2, UserPlus, Phone, Users, GraduationCap, LogIn, LogOut } from 'lucide-react';
+import { Plus, Search, Printer, Trash2, UserPlus, Phone, Users, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
 import { Student, Guardian, CLASSES } from './types';
-import { db, auth, signIn, logOut } from './firebase';
+import { db } from './firebase';
 import { 
   collection, 
   onSnapshot, 
@@ -24,7 +24,6 @@ import {
   orderBy,
   getDocFromServer
 } from 'firebase/firestore';
-import { onAuthStateChanged, User } from 'firebase/auth';
 
 enum OperationType {
   CREATE = 'create',
@@ -43,17 +42,7 @@ export default function App() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
   const [isDeleteClassModalOpen, setIsDeleteClassModalOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Auth Listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+  const [loading, setLoading] = useState(false);
 
   // Firestore Connection Test
   useEffect(() => {
@@ -71,11 +60,6 @@ export default function App() {
 
   // Firestore Listener
   useEffect(() => {
-    if (!user) {
-      setStudents([]);
-      return;
-    }
-
     const q = query(collection(db, 'students'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const studentsData = snapshot.docs.map(doc => ({
@@ -88,15 +72,11 @@ export default function App() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, []);
 
   function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
     const errInfo = {
       error: error instanceof Error ? error.message : String(error),
-      authInfo: {
-        userId: auth.currentUser?.uid,
-        email: auth.currentUser?.email,
-      },
       operationType,
       path
     };
@@ -216,28 +196,6 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-200 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-slate-100 border-slate-300 shadow-xl">
-          <CardHeader className="text-center">
-            <div className="mx-auto bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
-              <GraduationCap className="w-10 h-10 text-blue-600" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-slate-900">Creche Segura</CardTitle>
-            <CardDescription>Acesse o sistema para gerenciar a retirada de alunos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={signIn} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg">
-              <LogIn className="w-5 h-5 mr-2" />
-              Entrar com Google
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-slate-200 p-4 md:p-8 font-sans transition-colors duration-300">
       <Toaster />
@@ -250,7 +208,7 @@ export default function App() {
               <GraduationCap className="text-blue-600" />
               Creche Segura
             </h1>
-            <p className="text-slate-500">Gestão de retirada de alunos | Olá, {user.displayName}</p>
+            <p className="text-slate-500">Gestão de retirada de alunos</p>
           </div>
           
           <div className="flex items-center gap-3">
@@ -363,11 +321,6 @@ export default function App() {
             <Button variant="outline" onClick={handlePrint} disabled={filteredStudents.length === 0} className="bg-slate-100 border-slate-300">
               <Printer className="w-4 h-4 mr-2" />
               Imprimir Lista
-            </Button>
-
-            <Button variant="ghost" onClick={logOut} className="text-slate-600 hover:text-red-600">
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
             </Button>
           </div>
         </header>

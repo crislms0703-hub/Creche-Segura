@@ -14,11 +14,10 @@ service cloud.firestore {
     }
 
     match /students/{studentId} {
-      // Por enquanto, permitindo leitura e escrita para usuários autenticados
-      // Em um cenário real, restringiríamos por UID ou domínio de email
-      allow read, write: if isAuthenticated();
+      // Permitindo leitura e escrita pública conforme solicitado pelo usuário
+      allow read, write: if true;
       
-      allow create, update: if isAuthenticated() && isValidStudent(request.resource.data);
+      allow create, update: if isValidStudent(request.resource.data);
     }
   }
 }
