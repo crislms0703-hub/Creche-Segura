@@ -1,0 +1,43 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Informações do aluno e seus responsáveis autorizados.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nome completo do aluno."
+        },
+        "className": {
+          "type": "string",
+          "description": "Turma do aluno."
+        },
+        "guardians": {
+          "type": "array",
+          "description": "Lista de responsáveis autorizados.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "phone": { "type": "string" },
+              "relationship": { "type": "string" }
+            }
+          }
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Timestamp de criação."
+        }
+      },
+      "required": ["name", "className", "guardians", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Coleção de alunos da creche."
+    }
+  }
+}

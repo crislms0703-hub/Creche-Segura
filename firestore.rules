@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isValidStudent(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.className is string &&
+             data.guardians is list &&
+             data.createdAt is number;
+    }
+
+    match /students/{studentId} {
+      // Por enquanto, permitindo leitura e escrita para usuários autenticados
+      // Em um cenário real, restringiríamos por UID ou domínio de email
+      allow read, write: if isAuthenticated();
+      
+      allow create, update: if isAuthenticated() && isValidStudent(request.resource.data);
+    }
+  }
+}

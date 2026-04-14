@@ -1,0 +1,6 @@
+{
+  "name": "Creche Segura",
+  "description": "Sistema de gestão de retirada de alunos para creches, com controle de responsáveis autorizados e filtragem por turma.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
